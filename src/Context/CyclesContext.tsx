@@ -1,4 +1,5 @@
-import { createContext, useReducer, useState } from 'react';
+import { createContext, useEffect, useReducer, useState } from 'react';
+import { differenceInSeconds } from 'date-fns';
 import {
   addNewCycleAction,
   CyclesActionTypes,
@@ -31,10 +32,32 @@ interface CyclesState {
 }
 
 export function CycleContextProvider({ children }: { children: React.ReactNode }) {
-  const [cyclesState, dispatch] = useReducer(cyclesReducers, { cycles: [], activeCycle: null });
-  const [secondsPassed, setSecondsPassed] = useState(0);
+  const [cyclesState, dispatch] = useReducer(
+    cyclesReducers,
+    { cycles: [], activeCycle: null },
+    () => {
+      const localData = localStorage.getItem('@cycles-timer:cycles-1.0.0');
 
+      if (localData) {
+        return JSON.parse(localData);
+      }
+      return { cycles: [], activeCycle: null };
+    },
+  );
   const { cycles, activeCycle } = cyclesState;
+
+  const [secondsPassed, setSecondsPassed] = useState(() => {
+    if (activeCycle) {
+      return differenceInSeconds(new Date(), new Date(activeCycle.startDate));
+    }
+
+    return 0;
+  });
+
+  useEffect(() => {
+    const sateteJson = JSON.stringify(cyclesState);
+    localStorage.setItem('@cycles-timer:cycles-1.0.0', sateteJson);
+  }, [cyclesState]);
 
   function markCurrentCycleAsDone() {
     dispatch(markCurrentCycleAsDoneAction);

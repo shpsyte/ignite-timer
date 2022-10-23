@@ -3,11 +3,7 @@ import { CyclesContext } from '../../Context/CyclesContext';
 import { formatDistanceToNow } from 'date-fns';
 import { HistoryContainer, HistoryList, Status } from './styles';
 
-interface HistoryProps {
-  children?: ReactNode;
-}
-
-export function History({ children }: HistoryProps) {
+export function History() {
   const { cycles } = useContext(CyclesContext);
 
   return (
@@ -29,7 +25,7 @@ export function History({ children }: HistoryProps) {
                 <td>{cycle.task}</td>
                 <td>{cycle.minutes} minutos</td>
                 <td>
-                  {formatDistanceToNow(cycle.startDate, {
+                  {formatDistanceToNow(new Date(cycle.startDate), {
                     addSuffix: true,
                   })}
                 </td>

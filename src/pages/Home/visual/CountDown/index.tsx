@@ -22,7 +22,7 @@ export function CountDown() {
     let interval: number;
     if (activeCycle) {
       interval = setInterval(() => {
-        const secondDifference = differenceInSeconds(new Date(), activeCycle.startDate);
+        const secondDifference = differenceInSeconds(new Date(), new Date(activeCycle.startDate));
 
         if (secondDifference >= totalSeconds) {
           markCurrentCycleAsDone();
@@ -30,7 +30,7 @@ export function CountDown() {
 
           setSecondsPassed(0);
         } else {
-          setSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate));
+          setSecondsPassed(differenceInSeconds(new Date(), new Date(activeCycle.startDate)));
         }
       }, 1000);
     }
