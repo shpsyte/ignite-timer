@@ -3,13 +3,13 @@ import { FormContainer, TaskInput, MinutesInput } from './styles';
 import { useFormContext } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { CyclesContext } from '../..';
+import { CyclesContext } from '../../../../Context/CyclesContext';
 
 interface CycleFormProps {
   children?: ReactNode;
 }
 
-export interface Cycle {
+interface Cycle {
   id: string;
   task: string;
   minutes: number;
