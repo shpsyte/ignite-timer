@@ -1,13 +1,11 @@
-import { createContext, useState } from 'react';
-
-export interface Cycle {
-  id: string;
-  task: string;
-  minutes: number;
-  startDate: Date;
-  interruptDate?: Date;
-  endDate?: Date;
-}
+import { createContext, useReducer, useState } from 'react';
+import {
+  addNewCycleAction,
+  CyclesActionTypes,
+  interruptActiveCycleAction,
+  markCurrentCycleAsDoneAction,
+} from '../reducers/cycles/actions';
+import { Cycle, cyclesReducers } from '../reducers/cycles/reducer';
 
 interface CreateCycleData {
   task: string;
@@ -19,7 +17,7 @@ interface CycleContextType {
   activeCycle: Cycle | null;
   secondsPassed: number;
   markCurrentCycleAsDone: () => void;
-  removeCurrentCycle: () => void;
+
   setSecondsPassed: (seconds: number) => void;
   handleCreateNewCycle: (data: CreateCycleData) => void;
   handleInterrupCycle: () => void;
@@ -27,44 +25,20 @@ interface CycleContextType {
 
 export const CyclesContext = createContext({} as CycleContextType);
 
+interface CyclesState {
+  cycles: Cycle[];
+  activeCycle: Cycle | null;
+}
+
 export function CycleContextProvider({ children }: { children: React.ReactNode }) {
-  const [cycles, setCycles] = useState<Cycle[]>([]);
-  const [activeCycle, setActiveCycle] = useState<Cycle | null>(null);
+  const [cyclesState, dispatch] = useReducer(cyclesReducers, { cycles: [], activeCycle: null });
   const [secondsPassed, setSecondsPassed] = useState(0);
 
+  const { cycles, activeCycle } = cyclesState;
+
   function markCurrentCycleAsDone() {
-    setCycles((prev) => {
-      return prev.map((c) => {
-        if (c.id === activeCycle?.id) {
-          return {
-            ...c,
-            endDate: new Date(),
-          };
-        }
-        return c;
-      });
-    });
+    dispatch(markCurrentCycleAsDoneAction);
   }
-
-  function removeCurrentCycle() {
-    setActiveCycle(null);
-  }
-
-  const handleInterrupCycle = () => {
-    setCycles((prev) => {
-      return prev.map((c) => {
-        if (c.id === activeCycle?.id) {
-          return {
-            ...c,
-            interruptDate: new Date(),
-          };
-        }
-        return c;
-      });
-    });
-    setSecondsPassed(0);
-    setActiveCycle(null);
-  };
 
   const handleCreateNewCycle = (data: CreateCycleData) => {
     const id = String(new Date().getTime());
@@ -74,21 +48,22 @@ export function CycleContextProvider({ children }: { children: React.ReactNode }
       minutes: data.minutes,
       startDate: new Date(),
     };
-    setCycles((prev) => [...prev, newCycle]);
-    setActiveCycle(newCycle);
+    dispatch(addNewCycleAction(newCycle));
     setSecondsPassed(0);
+  };
 
-    // reset the form
-    // reset();
+  const handleInterrupCycle = () => {
+    dispatch(interruptActiveCycleAction());
+    setSecondsPassed(0);
   };
 
   return (
     <CyclesContext.Provider
       value={{
-        cycles,
+        cycles: cyclesState.cycles,
         activeCycle,
         markCurrentCycleAsDone,
-        removeCurrentCycle,
+
         secondsPassed,
         setSecondsPassed,
         handleCreateNewCycle,
